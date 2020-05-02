@@ -14,12 +14,13 @@ from scores import Scores
 class Demineur():
 
     def __init__(self, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None,
-                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=False, mute=False, DEBUG = False):
+                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, DEBUG = False):
         self.__DEBUG__ = DEBUG
         self.system = system()
         self.cheat=False
         self.reset=False
         self.lifeMode=lifeMode
+        self.lifemode_score=None
         self.mute=mute
         self.OLD_SCHOOL = oldSchool
         self.NB_LINES=nombreLignes
@@ -59,14 +60,24 @@ class Demineur():
         self.aide = PhotoImage(file="img/aide.gif")
         self.son = PhotoImage(file="img/son.gif")
         self.muted = PhotoImage(file="img/mute.gif")
-        #Afficheur Temps:
-        if self.OLD_SCHOOL:
-            self.temps=Afficheur(self.root, column=0, visible=afficheurOldSchoolVisible)
-            self.temps.grid(row=0, column=0)
-            self.temps.affiche(0)
+        if self.lifeMode != None:
+            self.coeur = PhotoImage(file="img/coeur.gif")
+            self.lifemode_score = 0
+            self.lifes = Canvas(self.root, width=83, height=41, bg="white")
+            self.lifes.grid(row=0, column=0)
+            self.lifes.create_image((22, 22), image=self.coeur)
+            self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.lifeMode))
+            self.lifes_victoires = Label(text="Victoires : " + str(self.lifemode_score), font=('Helvetica', 24), fg='black')
+            self.lifes_victoires.grid(row=1, column=0)
         else:
-            self.temps = Label(text="00:00:00", font=('Helvetica', 24), fg='black')
-            self.temps.grid(row=0, column=0)
+            #Afficheur Temps:
+            if self.OLD_SCHOOL:
+                self.temps=Afficheur(self.root, column=0, visible=afficheurOldSchoolVisible)
+                self.temps.grid(row=0, column=0)
+                self.temps.affiche(0)
+            else:
+                self.temps = Label(text="00:00:00", font=('Helvetica', 24), fg='black')
+                self.temps.grid(row=0, column=0)
         #Afficheur Mines:
         if self.OLD_SCHOOL:
             self.mines=Afficheur(self.root, column=2, visible=afficheurOldSchoolVisible)
@@ -118,17 +129,9 @@ class Demineur():
                 self.refreshScreen(reset=True)
         elif X == 1:
             #Bouton reset:
+            self.manchePerdueLifeMode()
             if self.coupsPrecedent != []:
-                self.reset=True
-                self.win=False
-                self.oneTime=True
-                self.perdu=False
-                self.depart=True
-                self.grille = self.generationGrilleVide()
-                self.coupsPrecedent=[]
-                self.boutons.delete(self.boutonSmiley)
-                self.boutonSmiley = self.boutons.create_image((64, 22), image=self.smiley_content)
-                self.refreshScreen(reset=True)
+                self.resetDemineur()
         elif X == 2:
             #Bouton aide:
             showinfo("Aide", "Vous disposez d'une grille contenant des mines cachées.\n"+
@@ -148,25 +151,18 @@ class Demineur():
             else:
                 self.boutons.delete(self.boutonMute)
                 self.boutonSon = self.boutons.create_image((148, 22), image=self.son)
-            
 
-    def generationGrilleVide(self):
-        G=[]
-        Gmines=[]
-        for i in range(self.NB_COLS):
-            subGrille=[]
-            for j in range(self.NB_LINES):
-                subGrille.append(False)
-            Gmines.append(subGrille)
-        G.append(Gmines)
-        Gaff=[]
-        for i in range(self.NB_COLS):
-            subGrille=[]
-            for j in range(self.NB_LINES):
-                subGrille.append(0)
-            Gaff.append(subGrille)
-        G.append(Gaff)
-        return G
+    def resetDemineur(self):
+        self.reset=True
+        self.win=False
+        self.oneTime=True
+        self.perdu=False
+        self.depart=True
+        self.grille = self.generationGrilleVide()
+        self.coupsPrecedent=[]
+        self.boutons.delete(self.boutonSmiley)
+        self.boutonSmiley = self.boutons.create_image((64, 22), image=self.smiley_content)
+        self.refreshScreen(reset=True)
     
     #Indiquer la case par un drapeau/un point d'interrogation/rien:
     def clicDroit(self, event):
@@ -222,6 +218,7 @@ class Demineur():
                 self.grille[1][x][y]=4
                 self.revelerGrille(x, y)
                 self.perdu = True
+                self.manchePerdueLifeMode()
             else:
                 self.grille[1][x][y]=3
                 if self.nbMinesAutour(x, y)==0:
@@ -230,6 +227,19 @@ class Demineur():
                         caseVide = listeCasesVides[0]
                         listeCasesVides.remove(caseVide)
                         listeCasesVides = self.detectCasesVidesAutour(caseVide[0], caseVide[1], listeCasesVides)
+    
+    def manchePerdueLifeMode(self):
+        if self.lifeMode != None:
+            if self.lifeMode > 0:
+                self.lifeMode -= 1
+            self.lifes.delete(self.lifes_text)
+            self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.lifeMode))
+            if self.lifeMode > 0:
+                self.resetDemineur()
+            else:
+                self.finPartie()
+                self.lifemode_score = 0
+                self.lifes_victoires.configure(text="Victoires : " + str(self.lifemode_score))
 
     def detectCasesVidesAutour(self, x, y, casesVides):
         V = self.voisins(x, y)
@@ -288,6 +298,24 @@ class Demineur():
                 if self.grille[1][i][j]==1:
                     nbMines+=1
         return nbMines
+
+    def generationGrilleVide(self):
+        G=[]
+        Gmines=[]
+        for i in range(self.NB_COLS):
+            subGrille=[]
+            for j in range(self.NB_LINES):
+                subGrille.append(False)
+            Gmines.append(subGrille)
+        G.append(Gmines)
+        Gaff=[]
+        for i in range(self.NB_COLS):
+            subGrille=[]
+            for j in range(self.NB_LINES):
+                subGrille.append(0)
+            Gaff.append(subGrille)
+        G.append(Gaff)
+        return G
 
     def generationGrille(self, nbMines, X, Y):
         G=[]
@@ -397,17 +425,8 @@ class Demineur():
     def actualiserTimer(self):
         self.win = self.checkWin()
         if not(self.reset):
-            if self.OLD_SCHOOL:
-                tmp=self.nbMines-self.nbMinesTrouver
-                if tmp<0:
-                    tmp=0
-                self.mines.affiche(tmp)
-            else:
-                tmp=self.nbMinesTrouver
-                if tmp > self.nbMines:
-                    tmp = self.nbMines
-                self.mines.configure(text=str(self.nbMinesTrouver)+"/"+str(self.nbMines))
-            if not(self.win) and not(self.perdu):
+            self.actualiserAfficheurMines()
+            if not(self.win) and not(self.perdu) and (self.lifeMode == None):
                 self.score = int(time() - self.start_time)
                 if self.OLD_SCHOOL:
                     self.temps.affiche(self.score)
@@ -417,19 +436,29 @@ class Demineur():
                 if not(self.mute):
                     playsound("sounds/ta_da.mp3", block = False)
                 print("Partie gagné !")
-                self.scoreboard=Tk()
-                self.scoreboard.title("Scoreboard")
-                self.scoreboard.resizable(width=False, height=False)
-                self.labelPseudo = Label(self.scoreboard, text='Entrez votre pseudo :')
-                self.labelPseudo.grid(row=0, column=0)
-                self.entryPseudo = Entry(self.scoreboard, textvariable=StringVar())
-                self.entryPseudo.grid(row=1, column=0)
-                self.buttonPseudo = Button(self.scoreboard, text='Ok', command=lambda:self.addScore(self.entryPseudo.get()))
-                self.buttonPseudo.grid(row=1, column=1)
-                self.scoreboard.mainloop()
-                self.oneTime = False
+                if self.lifeMode != None:
+                    self.lifemode_score += 1
+                    if bool(getrandbits(1)):
+                        self.NB_LINES += 2
+                    else:
+                        self.NB_COLS += 2
+                    self.SIDE_W=25*self.NB_COLS+self.DECALAGE*2-1
+                    self.SIDE_H=25*self.NB_LINES+self.DECALAGE*2-1
+                    self.cnv.configure(width=self.SIDE_W, height=self.SIDE_H)
+                    nbNouvellesMines=self.nbMines + randint(1, 11)
+                    if((nbNouvellesMines+9) >= (self.NB_LINES*self.NB_COLS)):
+                        self.nbMines=(self.NB_LINES*self.NB_COLS)-9
+                    else:
+                        self.nbMines=nbNouvellesMines
+                    self.nbMinesTrouver = 0
+                    self.actualiserAfficheurMines()
+                    self.lifes_victoires.configure(text="Victoires : " + str(self.lifemode_score))
+                    self.resetDemineur()
+                else:
+                    self.finPartie()
+                    self.oneTime = False
             self.root.after(500, self.actualiserTimer)
-        else:
+        elif self.lifeMode == None:
             if self.OLD_SCHOOL:
                 self.mines.affiche(self.nbMines)
             else:
@@ -438,21 +467,55 @@ class Demineur():
                 self.temps.affiche(0)
             else:
                 self.temps.configure(text=strftime("%H:%M:%S", gmtime(0)))
+    
+    def actualiserAfficheurMines(self):
+        if self.OLD_SCHOOL:
+            tmp=self.nbMines-self.nbMinesTrouver
+            if tmp<0:
+                tmp=0
+            self.mines.affiche(tmp)
+        else:
+            tmp=self.nbMinesTrouver
+            if tmp > self.nbMines:
+                tmp = self.nbMines
+            self.mines.configure(text=str(self.nbMinesTrouver)+"/"+str(self.nbMines))
 
+    def finPartie(self):
+        self.scoreboard=Tk()
+        self.scoreboard.title("Scoreboard")
+        self.scoreboard.resizable(width=False, height=False)
+        self.labelPseudo = Label(self.scoreboard, text='Entrez votre pseudo :')
+        self.labelPseudo.grid(row=0, column=0)
+        self.entryPseudo = Entry(self.scoreboard, textvariable=StringVar())
+        self.entryPseudo.grid(row=1, column=0)
+        self.buttonPseudo = Button(self.scoreboard, text='Ok', command=lambda:self.addScore(self.entryPseudo.get()))
+        self.buttonPseudo.grid(row=1, column=1)
+        self.scoreboard.mainloop()
+    
     def addScore(self, pseudo):
         #Debug:
         if self.__DEBUG__ :
             print("Cheat ?", self.cheat)
             print("Pseudo:", pseudo)
-            print("Score:", self.score)
-            print("Nombre de mines:", self.nbMines)
-            print("Taille grille (X Y):", self.NB_COLS, self.NB_LINES)
+            if self.lifeMode == None:
+                print("Score:", self.score)
+                print("Nombre de mines:", self.nbMines)
+                print("Taille grille (X Y):", self.NB_COLS, self.NB_LINES)
+            else:
+                print("Victoires:", self.lifemode_score)
         #ajouter le score à la liste:
         if self.cheat:
-            self.scores.write(pseudo + " cheateur", self.score, self.NB_COLS, self.NB_LINES, self.nbMines)
+            if self.lifeMode == None:
+                self.scores.write(pseudo + " cheateur", self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
+            else:
+                self.scores.write(pseudo + " cheateur", self.nbMines, lifeMode=self.lifemode_score)
         else:
-            self.scores.write(pseudo, self.score, self.NB_COLS, self.NB_LINES, self.nbMines)
+            if self.lifeMode == None:
+                self.scores.write(pseudo, self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
+            else:
+                self.scores.write(pseudo, self.nbMines, lifeMode=self.lifemode_score)
         self.labelPseudo.destroy()
         self.entryPseudo.destroy()
         self.buttonPseudo.destroy()
         self.scoreboard.destroy()
+        #Retour au menu principal
