@@ -47,7 +47,15 @@ class Menu():
             print(listeVariables)
             self.principal.withdraw()
             if len(listeVariables) > 5:
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=bool(listeVariables[0]), afficheurOldSchoolVisible=bool(listeVariables[1]), lifeMode=None, mute=False, DEBUG = False)
+                if listeVariables[0] == '0':
+                    old=False
+                else:
+                    old=True
+                if listeVariables[1] == '0':
+                    affOld=False
+                else:
+                    affOld=True
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=None, mute=False, DEBUG = False)
             else:
                 Demineur(self.principal, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None, difficulte=4, oldSchool=False, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, DEBUG = False)
         else:
@@ -60,7 +68,15 @@ class Menu():
             print(listeVariables)
             self.principal.withdraw()
             if len(listeVariables) > 5:
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=bool(listeVariables[0]), afficheurOldSchoolVisible=bool(listeVariables[1]), lifeMode=int(listeVariables[5]), mute=False, DEBUG = False)
+                if listeVariables[0] == '0':
+                    old=False
+                else:
+                    old=True
+                if listeVariables[1] == '0':
+                    affOld=False
+                else:
+                    affOld=True
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=int(listeVariables[5]), mute=False, DEBUG = False)
             else:
                 Demineur(self.principal, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None, difficulte=4, oldSchool=False, afficheurOldSchoolVisible=False, lifeMode=3, mute=False, DEBUG = False)
         else:
