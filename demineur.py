@@ -12,11 +12,22 @@ from afficheur import Afficheur
 from scores import Scores
 
 class Demineur():
+    
+    c=['gray',
+       'blue',
+       'lime',
+       'orange',
+       'magenta',
+       'red',
+       'black',
+       'black',
+       'black']
 
-    def __init__(self, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None,
+    def __init__(self, parent, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None,
                  difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, DEBUG = False):
         self.__DEBUG__ = DEBUG
         self.system = system()
+        self.parent = parent
         self.cheat=False
         self.reset=False
         self.lifeMode=lifeMode
@@ -48,8 +59,9 @@ class Demineur():
         self.oneTime = True
         self.score_time_max = sys.maxsize * 2 + 1
         self.score_time = 0
-        self.root=Tk()
+        self.root=Toplevel(self.parent)
         self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES))
+        self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
         #Chargement des images:
         self.mine = PhotoImage(file="img/mine.gif")
         self.mine_explosee = PhotoImage(file="img/mine_explosee.gif")
@@ -67,24 +79,24 @@ class Demineur():
             self.lifes.grid(row=0, column=0)
             self.lifes.create_image((22, 22), image=self.coeur)
             self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.lifeMode))
-            self.lifes_victoires = Label(text="Victoires : " + str(self.lifemode_score), font=('Helvetica', 24), fg='black')
+            self.lifes_victoires = Label(self.root, text="Victoires : " + str(self.lifemode_score), font=('Helvetica', 24), fg='black')
             self.lifes_victoires.grid(row=1, column=0)
         else:
             #Afficheur Temps:
             if self.OLD_SCHOOL:
-                self.temps=Afficheur(self.root, column=0, visible=afficheurOldSchoolVisible)
+                self.temps=Afficheur(tk=self.root, column=0, visible=afficheurOldSchoolVisible)
                 self.temps.grid(row=0, column=0)
                 self.temps.affiche(0)
             else:
-                self.temps = Label(text="00:00:00", font=('Helvetica', 24), fg='black')
+                self.temps = Label(self.root, text="00:00:00", font=('Helvetica', 24), fg='black')
                 self.temps.grid(row=0, column=0)
         #Afficheur Mines:
         if self.OLD_SCHOOL:
-            self.mines=Afficheur(self.root, column=2, visible=afficheurOldSchoolVisible)
+            self.mines=Afficheur(tk=self.root, column=2, visible=afficheurOldSchoolVisible)
             self.mines.grid(row=0, column=2)
             self.mines.affiche(self.nbMines)
         else:
-            self.mines = Label(text=str(self.nbMinesTrouver)+"/"+str(self.nbMines), font=('Helvetica', 24), fg='black')
+            self.mines = Label(self.root, text=str(self.nbMinesTrouver)+"/"+str(self.nbMines), font=('Helvetica', 24), fg='black')
             self.mines.grid(row=0, column=2)
         #Boutons precedent, reset, aide et mute:
         self.boutons = Canvas(self.root, width=167, height=41, bg="white")
@@ -110,13 +122,17 @@ class Demineur():
         self.grille=self.generationGrilleVide()
         self.refreshScreen()
         self.root.mainloop()
+        
+    def onClosing(self):
+        if askokcancel("Quitter", "Voulez-vous quitter la partie ?"):
+            self.root.destroy()
+            self.parent.destroy()
     
     def leCheatInfernal(self, event):
-        if self.depart==True:
-            print("CheatInfernal activé! Aucunes mines!")
-            self.cheat=True
-            self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES) + " [CheatInfernal]")
-            self.nbMines=0
+        print("CheatInfernal activé! Transparence des cases minés active!")
+        self.cheat=True
+        self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES) + " [CheatInfernal]")
+        self.refreshScreen()
 
     def quelBouton(self, event):
         X = (event.x//43)
@@ -138,10 +154,9 @@ class Demineur():
                              "En cliquant sur une case,\n"+
                              "vous connaissez le nombre de mines se trouvant\n"+
                              "dans les cases (8 au maximum) qui l'entourent.\n"+
-                             "Le but du jeu est de détecter toutes les mines sans cliquer dessus.\n"+
+                             "Le but du jeu est de détecter toutes les mines sans y cliquer dessus.\n"+
                              "Si vous avez deviné la position d'une mine,"+
-                             "vous pouvez la faire apparaître par un clic droit sur la case\n"+
-                             "(ou en cliquant sur Mine puis sur la case ).")
+                             "vous pouvez la faire apparaître par un clic droit sur la case(drapeau).")
         elif X == 3:
             #Bouton mute:
             self.mute=not(self.mute)
@@ -372,9 +387,16 @@ class Demineur():
                     else:
                         self.nbMinesArround = self.nbMinesAutour(col, line)
                         if not(self.nbMinesArround==0):
-                            self.cnv.create_text(self.DECALAGE*3+self.DECALAGE//2+col*25, self.DECALAGE*3+self.DECALAGE//2+line*25,fill="darkblue",font="Helvetica 10 bold", text=str(self.nbMinesArround))
+                            self.cnv.create_text(self.DECALAGE*3+self.DECALAGE//2+col*25,
+                                                 self.DECALAGE*3+self.DECALAGE//2+line*25,font="Helvetica 10 bold",
+                                                 text=str(self.nbMinesArround), fill=str(self.c[self.nbMinesArround]))
                 else:
-                    self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill='gray')
+                    if self.cheat and self.grille[0][col][line]:
+                        self.centre=(self.DECALAGE+13+col*25, self.DECALAGE+13+line*25)
+                        self.cnv.create_image(self.centre, image=self.mine)
+                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill='gray', stipple="gray50")
+                    else:
+                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill='gray')
         #Debug:
         if self.__DEBUG__ :
             if self.system == 'Windows':
@@ -506,9 +528,9 @@ class Demineur():
         #ajouter le score à la liste:
         if self.cheat:
             if self.lifeMode == None:
-                self.scores.write(pseudo + " cheateur", self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
+                self.scores.write(pseudo + " [cheateur]", self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
             else:
-                self.scores.write(pseudo + " cheateur", self.nbMines, lifeMode=self.lifemode_score)
+                self.scores.write(pseudo + " [cheateur]", self.nbMines, lifeMode=self.lifemode_score)
         else:
             if self.lifeMode == None:
                 self.scores.write(pseudo, self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
@@ -518,4 +540,6 @@ class Demineur():
         self.entryPseudo.destroy()
         self.buttonPseudo.destroy()
         self.scoreboard.destroy()
-        #Retour au menu principal
+        #Retour au menu principal:
+        self.root.destroy()
+        self.parent.deiconify()

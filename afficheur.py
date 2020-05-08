@@ -16,10 +16,10 @@ class Afficheur(Frame):
             self.master.resizable(width=False, height=False)
             self.lst=[]
             self.visible=visible
-            self.build(size, column, nCadrans)
+            self.build(tk, size, column, nCadrans)
 
-        def build(self, size, c, n):
-            self.can=Canvas(self,bg='black',relief=FLAT,width =25*size*n,height =42*size, bd=0, highlightthickness=0)
+        def build(self, tk, size, c, n):
+            self.can=Canvas(tk,bg='black',relief=FLAT,width =25*size*n,height =42*size, bd=0, highlightthickness=0)
             self.can.grid(row=0,column=c)
             for j in range(n):
                 for i in [1,2,3,4,5,6,7]:#Mise en place des segments de l'afficheur

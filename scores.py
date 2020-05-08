@@ -10,7 +10,7 @@ class Scores():
                 fichier = open("scores_lifemode.stats", "a")
                 pseudo = pseudo.replace(self.splitter, "")
                 if(pseudo != ""):
-                    fichier.write(pseudo + "__SPLITTER__" + str(lifeMode))
+                    fichier.write(pseudo + "__SPLITTER__" + str(lifeMode) + "\n")
                     fichier.close()
                     return True
                 fichier.close()
@@ -26,7 +26,7 @@ class Scores():
 
         def read(self, lifemode=False):
             if lifemode:
-                fichier = open("scores_lifetime.stats", "r")
+                fichier = open("scores_lifemode.stats", "r")
                 string = fichier.read()
                 out = []
                 for pseudo_score in string.split('\n'):
@@ -42,8 +42,8 @@ class Scores():
                 out = []
                 for pseudo_score in string.split('\n'):
                     liste = pseudo_score.split(self.splitter)
-                    if(len(liste) == 5):
-                        toAppend=[liste[0], liste[1], liste[2], liste[3], liste[4]] #pseudo ; score ; tailleX ; tailleY ; nbMines
+                    if(len(liste) == 4):
+                        toAppend=[liste[0], liste[1], liste[2], liste[3]] #pseudo ; score ; tailleX x tailleY ; nbMines
                         if(toAppend[0]!=""):
                             out.append(toAppend)
                 fichier.close()
