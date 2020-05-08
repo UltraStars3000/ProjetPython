@@ -3,6 +3,8 @@ from tkinter import *
 class Options():
 
     def __init__(self):
+        fichier = open("options.conf", "a")
+        fichier.close()
         self.optionsOpen = False
         
     def menu(self):

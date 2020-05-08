@@ -3,6 +3,8 @@ class Scores():
         def __init__(self, splitter="__SPLITTER__"):
             fichier = open("scores.stats", "a")
             fichier.close()
+            fichier = open("scores_lifemode.stats", "a")
+            fichier.close()
             self.splitter = splitter
         
         def write(self, pseudo, nbMines, score=0, tailleX=0, tailleY=0, lifeMode=None):
