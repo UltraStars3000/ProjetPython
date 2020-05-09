@@ -2,6 +2,7 @@ from demineur import Demineur
 from options import Options
 from scores import Scores
 from tkinter import *
+from tkinter.messagebox import *
 
 class Menu():
 
@@ -9,6 +10,7 @@ class Menu():
         self.opt=Options()
         self.principal = Tk()
         self.principal.title("Démineur Python")
+        self.principal.protocol("WM_DELETE_WINDOW", self.onClosing)
         self.nom=Canvas(self.principal, width=250, height=50, bg='white')
         self.nomText = self.nom.create_text(125,25,fill="black",font=("Gabriola", 30, "bold italic"), text="Démineur")
         mine = PhotoImage(file="img/mine.gif")
@@ -170,6 +172,8 @@ class Menu():
     def onClosing(self):
         if askokcancel("Quitter", "Voulez-vous quitter le jeu ?"):
             self.principal.destroy()
+            if self.opt.optionsOpen == True:
+                self.opt.fenetreOptions.destroy()
 
     def options(self):
         self.opt.menu()
@@ -186,8 +190,8 @@ class Menu():
         if self.nom["background"] == "black":
             self.nom.configure(bg='white')
             self.nom.delete(self.nomText)
-            self.nomText = self.nom.create_text(75,25,fill="black",font=("Gabriola", 30, "bold italic"), text="Démineur")
+            self.nomText = self.nom.create_text(125,25,fill="black",font=("Gabriola", 30, "bold italic"), text="Démineur")
         else:
             self.nom.configure(bg='black')
             self.nom.delete(self.nomText)
-            self.nomText = self.nom.create_text(75,25,fill="white",font=("Gabriola", 30, "bold italic"), text="Démineur")
+            self.nomText = self.nom.create_text(125,25,fill="white",font=("Gabriola", 30, "bold italic"), text="Démineur")

@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter.messagebox import *
 
 class Options():
 
@@ -13,6 +14,7 @@ class Options():
         self.fenetreOptions.title("Options")
         self.fenetreOptions.configure(bg="lightgray")
         self.fenetreOptions.resizable(height = False, width = False)
+        self.fenetreOptions.protocol("WM_DELETE_WINDOW", self.onClosing)
         
         liste = self.read()
 
@@ -75,6 +77,11 @@ class Options():
         self.validation.grid(row=6, column=0, sticky=E)
 
         self.fenetreOptions.mainloop()
+    
+    def onClosing(self):
+        if askokcancel("Quitter", "Voulez-vous quitter\nles options sans les sauvegarder ?"):
+            self.optionsOpen=False
+            self.fenetreOptions.destroy()
 
     def valider(self):
         if(self.write()):
