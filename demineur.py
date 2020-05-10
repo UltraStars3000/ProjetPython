@@ -22,9 +22,10 @@ class Demineur():
        'black',
        'black',
        'black']
+    coupPrecedent=[]
 
     def __init__(self, parent, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None,
-                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, DEBUG = False):
+                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, bg="gray", fg="lightgray", DEBUG = False):
         self.__DEBUG__ = DEBUG
         self.system = system()
         self.parent = parent
@@ -33,6 +34,8 @@ class Demineur():
         self.lifeMode=lifeMode
         self.lifemode_score=None
         self.mute=mute
+        self.bg=bg
+        self.fg=fg
         self.OLD_SCHOOL = oldSchool
         self.NB_LINES=nombreLignes
         self.NB_COLS=nombreColonnes
@@ -41,7 +44,6 @@ class Demineur():
         self.SIDE_W=25*self.NB_COLS+self.DECALAGE*2-1
         self.SIDE_H=25*self.NB_LINES+self.DECALAGE*2-1
         self.nbMinesTrouver=0
-        self.coupsPrecedent=[]
         #difficulte de 1 à 20 (4/9/14/19/24/29/34/39/44/49/54/59/64/69/74/79/84/89/94/99% de mines)
         self.difficulte=difficulte
         if(self.FORCAGE_MINES==None):
@@ -133,21 +135,57 @@ class Demineur():
         self.cheat=True
         self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES) + " [CheatInfernal]")
         self.refreshScreen()
+        
+    def setGrille(self, G):
+        #Pas besoin de vérifier si les tailles sont correctes
+        #self.grille[1] et G ont obligatoirement la même taille.
+        for i in range(len(self.grille[1])):
+            for j in range(len(self.grille[1][i])):
+                self.grille[1][i][j]=G[i][j]
+        print("====================================")
+        print("La prochaine grille:")
+        print(self.grille[1])
+        print("====================================")
+    
+    def estLePremierCoup(self, G):
+        for i in range(len(G)):
+            for j in range(len(G[i])):
+                if not(G[i][j] == 0):
+                    return False
+        return True
 
     def quelBouton(self, event):
         X = (event.x//43)
         if X == 0:
-            #Bouton précedent:
-            if self.coupsPrecedent != []:
-                del self.grille[-1]
-                self.grille.append(list(self.coupsPrecedent[-1]))
-                del self.coupsPrecedent[-1]
-                self.refreshScreen(reset=True)
+            #Bouton précédent:
+            if self.lifeMode == None:
+                if self.depart==True:
+                    showinfo("Aide", "Commencez à jouer pour pouvoir effectuer\n"+
+                                     "qu'un retour en arrière par tour.")
+                elif self.coupPrecedent == []:
+                    showinfo("Aide", "Vous ne pouvez effectuer qu'un\n"+
+                                     "retour en arrière par tour.\n"+
+                                     "Plus ça serait de la triche.")
+                else:
+                    print("====================================")
+                    print("Coup precedent chargé:")
+                    print(self.getCoupPrecedent())
+                    print("====================================")
+                    self.setGrille(self.getCoupPrecedent())
+                    self.win = False
+                    self.perdu = False
+                    self.oneTime = True
+                    if self.estLePremierCoup(self.getCoupPrecedent()):
+                        print("premier coup chargé")
+                    self.coupPrecedent = []
+                    self.refreshScreen()
+            else:
+                showinfo("Aide", "Cette fonctionnalité est\n"+
+                                 "désactivé dans le LifeMode.")
         elif X == 1:
             #Bouton reset:
             self.manchePerdueLifeMode()
-            if self.coupsPrecedent != []:
-                self.resetDemineur()
+            self.resetDemineur()
         elif X == 2:
             #Bouton aide:
             showinfo("Aide", "Vous disposez d'une grille contenant des mines cachées.\n"+
@@ -174,10 +212,10 @@ class Demineur():
         self.perdu=False
         self.depart=True
         self.grille = self.generationGrilleVide()
-        self.coupsPrecedent=[]
+        self.coupPrecedent=[]
         self.boutons.delete(self.boutonSmiley)
         self.boutonSmiley = self.boutons.create_image((64, 22), image=self.smiley_content)
-        self.refreshScreen(reset=True)
+        self.refreshScreen()
     
     #Indiquer la case par un drapeau/un point d'interrogation/rien:
     def clicDroit(self, event):
@@ -186,16 +224,27 @@ class Demineur():
             X = event.x
             Y = event.y
             col, line = self.getCase(X, Y)
+            #Debug:
+            #if self.__DEBUG__ :
+            print(X, Y)
+            print(col, line)
             if (self.NB_LINES > line >= 0) and (self.NB_COLS > col >=0):
-                #Debug:
-                if self.__DEBUG__ :
-                    print(X, Y)
-                    print(col, line)
+                if 2 >= self.grille[1][col][line] >= 0:
+                    #Ajout du coup aux coups précédents:
+                    self.setCoupPrecedent()
+                print("====================================")
+                print("Coup precedent:")
+                print(self.coupPrecedent)
+                print("====================================")
                 #Rafraichissement de la case choisit:
                 if col<len(self.grille[1]) and line<len(self.grille[1][0]):
                     self.changeCase(col, line)
                 #Rafraichissement du jeu:
                 self.refreshScreen()
+                print("====================================")
+                print("Coup actuel:")
+                print(self.grille[1])
+                print("====================================")
                 #Debug:
                 if self.__DEBUG__ :
                     # on dessine un carré
@@ -209,18 +258,30 @@ class Demineur():
             X = event.x
             Y = event.y
             col, line = self.getCase(X, Y)
-            if self.__DEBUG__ :
-                print(X, Y)
-                print(col, line)
+            #Debug:
+            #if self.__DEBUG__ :
+            print(X, Y)
+            print(col, line)
             if (self.NB_LINES > line >= 0) and (self.NB_COLS > col >=0):
                 #Mecanique premier tour:
                 if self.depart==True:
                     self.firstTour(col, line)
+                if 2 >= self.grille[1][col][line] >= 0:
+                    #Ajout du coup aux coups précédents:
+                    self.setCoupPrecedent()
+                print("====================================")
+                print("Coup precedent:")
+                print(self.coupPrecedent)
+                print("====================================")
                 #Mecanique grille du jeu:
                 if col<len(self.grille[1]) and line<len(self.grille[1][0]):
                     self.revelerCase(col, line)
                 #Rafraichissement du jeu:
                 self.refreshScreen()
+                print("====================================")
+                print("Coup actuel:")
+                print(self.grille[1])
+                print("====================================")
                 #Debug:
                 if self.__DEBUG__ :
                     # on dessine un carré
@@ -248,7 +309,7 @@ class Demineur():
             if self.lifeMode > 0:
                 self.lifeMode -= 1
             self.lifes.delete(self.lifes_text)
-            self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.lifeMode))
+            self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.lifeMode))
             if self.lifeMode > 0:
                 self.resetDemineur()
             else:
@@ -289,7 +350,6 @@ class Demineur():
     def changeCase(self, y, x):
         if 2 >= self.grille[1][y][x] >= 0:
             self.grille[1][y][x]=(self.grille[1][y][x]+1)%3
-        return self.grille[1][y][x]
 
     def getCase(self, x, y):
         return (x-self.DECALAGE)//25, (y-self.DECALAGE)//25
@@ -359,19 +419,28 @@ class Demineur():
                     nbMines-=1
         return G
     
-    def ajoutCoupPrecedent(self):
-        self.coupsPrecedent.append(list(self.grille[1]))
+    def setCoupPrecedent(self):
+        self.coupPrecedent=[]
+        for i in range(len(self.grille[1])):
+            G=[]
+            for j in range(len(self.grille[1][i])):
+                G.append(self.grille[1][i][j])
+            self.coupPrecedent.append(G)
+        print("====================================")
+        print("Coup precedent:")
+        print(self.coupPrecedent)
+        print("====================================")
+    
+    def getCoupPrecedent(self):
+        return self.coupPrecedent
 
-    def refreshScreen(self, reset=False):
+    def refreshScreen(self):
         #Suppression des images et rectangles dessines 
         self.cnv.delete("all")
-        #Ajout du coup aux coups précédents:
-        if not(reset):
-            self.ajoutCoupPrecedent()
         #Placement des images
         for line in range(self.NB_LINES):
             for col in range(self.NB_COLS):
-                self.cnv.create_rectangle(self.DECALAGE+col*25, self.DECALAGE+line*25, self.DECALAGE+col*25+25, self.DECALAGE+line*25+25, fill='lightgray')
+                self.cnv.create_rectangle(self.DECALAGE+col*25, self.DECALAGE+line*25, self.DECALAGE+col*25+25, self.DECALAGE+line*25+25, fill=self.fg)
                 if self.grille[1][col][line]==1:
                     self.centre=(self.DECALAGE+13+col*25, self.DECALAGE+13+line*25)
                     self.cnv.create_image(self.centre, image=self.drapeau)
@@ -394,9 +463,9 @@ class Demineur():
                     if self.cheat and self.grille[0][col][line]:
                         self.centre=(self.DECALAGE+13+col*25, self.DECALAGE+13+line*25)
                         self.cnv.create_image(self.centre, image=self.mine)
-                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill='gray', stipple="gray50")
+                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill=self.bg, stipple="gray50")
                     else:
-                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill='gray')
+                        self.cnv.create_rectangle(self.DECALAGE+col*25+1, self.DECALAGE+line*25+1, self.DECALAGE+col*25+23, self.DECALAGE+line*25+23, fill=self.bg)
         #Debug:
         if self.__DEBUG__ :
             if self.system == 'Windows':

@@ -48,7 +48,7 @@ class Menu():
             listeVariables=self.readOptions()
             print(listeVariables)
             self.principal.withdraw()
-            if len(listeVariables) > 5:
+            if len(listeVariables) > 8:
                 if listeVariables[0] == '0':
                     old=False
                 else:
@@ -57,9 +57,13 @@ class Menu():
                     affOld=False
                 else:
                     affOld=True
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=None, mute=False, DEBUG = False)
+                if listeVariables[8] == '0':
+                    m=False
+                else:
+                    m=True
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=None, mute=m, bg=listeVariables[6], fg=listeVariables[7])
             else:
-                Demineur(self.principal, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None, difficulte=4, oldSchool=False, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, DEBUG = False)
+                Demineur(self.principal, difficulte=4, oldSchool=False)
         else:
             messagebox.showerror(title="Lancement de partie", message="Veuillez fermer les options avant de lancer une partie.")
 
@@ -69,7 +73,7 @@ class Menu():
             listeVariables=self.readOptions()
             print(listeVariables)
             self.principal.withdraw()
-            if len(listeVariables) > 5:
+            if len(listeVariables) > 8:
                 if listeVariables[0] == '0':
                     old=False
                 else:
@@ -78,9 +82,13 @@ class Menu():
                     affOld=False
                 else:
                     affOld=True
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=int(listeVariables[5]), mute=False, DEBUG = False)
+                if listeVariables[8] == '0':
+                    m=False
+                else:
+                    m=True
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=int(listeVariables[5]), mute=m, bg=listeVariables[6], fg=listeVariables[7])
             else:
-                Demineur(self.principal, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None, difficulte=4, oldSchool=False, afficheurOldSchoolVisible=False, lifeMode=3, mute=False, DEBUG = False)
+                Demineur(self.principal, difficulte=4, oldSchool=False, lifeMode=3)
         else:
             messagebox.showerror(title="Lancement de partie", message="Veuillez fermer les options avant de lancer une partie.")
     

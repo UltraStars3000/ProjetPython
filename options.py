@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.messagebox import *
+from tkinter.colorchooser import *
 
 class Options():
 
@@ -70,11 +71,31 @@ class Options():
                           activeforeground='black', highlightthickness=0)
         self.optSelVies.grid(row=5, column=1, sticky=W+E+N+S)
 
+        Label(self.fenetreOptions, width = 20, anchor=W, bg="lightgray", text = "Couleur d'arrière-plan\ndes cases").grid(row=6, column=0, sticky=W+E+N+S)
+        self.boutonBgColor = Button(self.fenetreOptions, text="", bd=5, highlightbackground="black", font=("Times New Roman", 10, "bold"),
+                                       bg='gray', activebackground='gray', command=self.setBgColor)
+        if len(liste) > 6:
+            self.boutonBgColor.config(bg=liste[6], activebackground=liste[6])
+        self.boutonBgColor.grid(row=6, column=1, sticky=W+E+N+S)
+
+        Label(self.fenetreOptions, width = 20, anchor=W, bg="lightgray", text = "Couleur de premier plan\ndes cases").grid(row=7, column=0, sticky=W+E+N+S)
+        self.boutonFgColor = Button(self.fenetreOptions, text="", bd=5, highlightbackground="black", font=("Times New Roman", 10, "bold"),
+                                       bg='lightgray', activebackground='lightgray', command=self.setFgColor)
+        if len(liste) > 7:
+            self.boutonFgColor.config(bg=liste[7], activebackground=liste[7])
+        self.boutonFgColor.grid(row=7, column=1, sticky=W+E+N+S)
+
+        Label(self.fenetreOptions, width = 20, anchor=W, bg="lightgray", text = "Rendre muet par défaut").grid(row=8, column=0, sticky=W+E+N+S)
+        self.mute = IntVar(self.fenetreOptions)
+        Checkbutton(self.fenetreOptions, variable=self.mute, selectcolor="gray", activebackground = "lightgray", width = 2, indicatoron=0).grid(row=8, column=1, sticky=W+E+N+S)
+        if len(liste) > 8:
+            self.mute.set(liste[8])
+
         self.validation = Button(self.fenetreOptions, text="Valider", bd=0, font=("Times New Roman", 10, "bold"),
                                        bg='lightgray', activebackground='black',
                                        fg='black', activeforeground='lightgray',
                                        width=12, command=self.valider)
-        self.validation.grid(row=6, column=0, sticky=E)
+        self.validation.grid(row=9, column=0, sticky=E)
 
         self.fenetreOptions.mainloop()
     
@@ -82,6 +103,16 @@ class Options():
         if askokcancel("Quitter", "Voulez-vous quitter\nles options sans les sauvegarder ?"):
             self.optionsOpen=False
             self.fenetreOptions.destroy()
+
+    def setBgColor(self):
+        (triple, hexstr) = askcolor()
+        if hexstr:
+            self.boutonBgColor.config(bg=hexstr, activebackground=hexstr)
+
+    def setFgColor(self):
+        (triple, hexstr) = askcolor()
+        if hexstr:
+            self.boutonFgColor.config(bg=hexstr, activebackground=hexstr)
 
     def valider(self):
         if(self.write()):
@@ -107,7 +138,7 @@ class Options():
             col = str(self.colonnes.get())
         else:
             col = "5"
-        fichier.write(str(self.cptType.get()) + ";" + str(self.segApparents.get()) + ";" + col + ";" + lines + ";" + dif + ";" + sel)
+        fichier.write(str(self.cptType.get()) + ";" + str(self.segApparents.get()) + ";" + col + ";" + lines + ";" + dif + ";" + sel + ";" + self.boutonBgColor["background"] + ";" + self.boutonFgColor["background"] + ";" + str(self.mute.get()))
         fichier.close()
         return True
 
