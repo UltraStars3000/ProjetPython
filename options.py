@@ -58,7 +58,7 @@ class Options():
                              activeforeground='black', highlightthickness=0)
         self.optDifficulte.grid(row=4, column=1, sticky=W+E+N+S)
 
-        Label(self.fenetreOptions, width = 20, anchor=W, bg="lightgray", text = "Nombre de vies de départ\n(LifeMode)").grid(row=5, column=0, sticky=W+E+N+S)
+        Label(self.fenetreOptions, width = 20, anchor=W, bg="lightgray", text = "Nombre de vies de départ\n(Marathon)").grid(row=5, column=0, sticky=W+E+N+S)
         self.listSelVies = [str(i+1) for i in range(5)]
         self.selVies=StringVar(self.fenetreOptions)
         if len(liste) > 5:

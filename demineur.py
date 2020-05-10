@@ -25,14 +25,14 @@ class Demineur():
     coupPrecedent=[]
 
     def __init__(self, parent, nombreColonnes=5, nombreLignes=10, forcageNombreMines=None,
-                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, lifeMode=None, mute=False, bg="gray", fg="lightgray", DEBUG = False):
+                 difficulte=10, oldSchool=True, afficheurOldSchoolVisible=False, marathon=None, mute=False, bg="gray", fg="lightgray", DEBUG = False):
         self.__DEBUG__ = DEBUG
         self.system = system()
         self.parent = parent
         self.cheat=False
         self.reset=False
-        self.lifeMode=lifeMode
-        self.lifemode_score=None
+        self.marathon=marathon
+        self.marathon_score=None
         self.mute=mute
         self.bg=bg
         self.fg=fg
@@ -63,7 +63,10 @@ class Demineur():
         self.score_time_max = sys.maxsize * 2 + 1
         self.score_time = 0
         self.root=Toplevel(self.parent)
-        self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES))
+        if self.marathon != None:
+            self.root.title("Marathon démineur")
+        else:
+            self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES))
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
         #Chargement des images:
         self.mine = PhotoImage(file="img/mine.gif")
@@ -75,14 +78,14 @@ class Demineur():
         self.aide = PhotoImage(file="img/aide.gif")
         self.son = PhotoImage(file="img/son.gif")
         self.muted = PhotoImage(file="img/mute.gif")
-        if self.lifeMode != None:
+        if self.marathon != None:
             self.coeur = PhotoImage(file="img/coeur.gif")
-            self.lifemode_score = 0
+            self.marathon_score = 0
             self.lifes = Canvas(self.root, width=83, height=41, bg="white")
             self.lifes.grid(row=0, column=0)
             self.lifes.create_image((22, 22), image=self.coeur)
-            self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.lifeMode))
-            self.lifes_victoires = Label(self.root, text="Victoires : " + str(self.lifemode_score), font=('Helvetica', 24), fg='black')
+            self.lifes_text=self.lifes.create_text(60,23,fill="black",font="Helvetica 20 bold", text=str(self.marathon))
+            self.lifes_victoires = Label(self.root, text="Victoires : " + str(self.marathon_score), font=('Helvetica', 24), fg='black')
             self.lifes_victoires.grid(row=1, column=0)
         else:
             #Afficheur Temps:
@@ -134,7 +137,10 @@ class Demineur():
     def leCheatInfernal(self, event):
         print("CheatInfernal activé! Transparence des cases minés active!")
         self.cheat=True
-        self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES) + " [CheatInfernal]")
+        if self.marathon != None:
+            self.root.title("Marathon démineur [CheatInfernal]")
+        else:
+            self.root.title("Démineur " + str(self.NB_COLS) + "x" + str(self.NB_LINES) + " [CheatInfernal]")
         self.refreshScreen()
         
     def setGrille(self, G):
@@ -148,7 +154,7 @@ class Demineur():
         X = (event.x//43)
         if X == 0:
             #Bouton précédent:
-            if self.lifeMode == None:
+            if self.marathon == None:
                 if self.depart==True:
                     showinfo("Aide", "Commencez à jouer pour pouvoir effectuer\n"+
                                      "qu'un retour en arrière par tour.")
@@ -165,10 +171,10 @@ class Demineur():
                     self.refreshScreen()
             else:
                 showinfo("Aide", "Cette fonctionnalité est\n"+
-                                 "désactivé dans le LifeMode.")
+                                 "désactivé dans le Marathon.")
         elif X == 1:
             #Bouton reset:
-            self.manchePerdueLifeMode()
+            self.manchePerdueMarathon()
             self.resetDemineur()
         elif X == 2:
             #Bouton aide:
@@ -209,9 +215,9 @@ class Demineur():
             Y = event.y
             col, line = self.getCase(X, Y)
             #Debug:
-            #if self.__DEBUG__ :
-            print(X, Y)
-            print(col, line)
+            if self.__DEBUG__ :
+                print(X, Y)
+                print(col, line)
             if (self.NB_LINES > line >= 0) and (self.NB_COLS > col >=0):
                 if 2 >= self.grille[1][col][line] >= 0:
                     #Ajout du coup aux coups précédents:
@@ -235,9 +241,9 @@ class Demineur():
             Y = event.y
             col, line = self.getCase(X, Y)
             #Debug:
-            #if self.__DEBUG__ :
-            print(X, Y)
-            print(col, line)
+            if self.__DEBUG__ :
+                print(X, Y)
+                print(col, line)
             if (self.NB_LINES > line >= 0) and (self.NB_COLS > col >=0):
                 #Mecanique premier tour:
                 if self.depart==True:
@@ -262,7 +268,7 @@ class Demineur():
                 self.grille[1][x][y]=4
                 self.revelerGrille(x, y)
                 self.perdu = True
-                self.manchePerdueLifeMode()
+                self.manchePerdueMarathon()
             else:
                 self.grille[1][x][y]=3
                 if self.nbMinesAutour(x, y)==0:
@@ -272,18 +278,18 @@ class Demineur():
                         listeCasesVides.remove(caseVide)
                         listeCasesVides = self.detectCasesVidesAutour(caseVide[0], caseVide[1], listeCasesVides)
     
-    def manchePerdueLifeMode(self):
-        if self.lifeMode != None:
-            if self.lifeMode > 0:
-                self.lifeMode -= 1
+    def manchePerdueMarathon(self):
+        if self.marathon != None:
+            if self.marathon > 0:
+                self.marathon -= 1
             self.lifes.delete(self.lifes_text)
-            self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.lifeMode))
-            if self.lifeMode > 0:
+            self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.marathon))
+            if self.marathon > 0:
                 self.resetDemineur()
             else:
                 self.finPartie()
-                self.lifemode_score = 0
-                self.lifes_victoires.configure(text="Victoires : " + str(self.lifemode_score))
+                self.marathon_score = 0
+                self.lifes_victoires.configure(text="Victoires : " + str(self.marathon_score))
 
     def detectCasesVidesAutour(self, x, y, casesVides):
         V = self.voisins(x, y)
@@ -481,7 +487,7 @@ class Demineur():
         self.win = self.checkWin()
         if not(self.reset):
             self.actualiserAfficheurMines()
-            if not(self.win) and not(self.perdu) and (self.lifeMode == None):
+            if not(self.win) and not(self.perdu) and (self.marathon == None):
                 self.score = int(time() - self.start_time)
                 if self.OLD_SCHOOL:
                     self.temps.affiche(self.score)
@@ -491,14 +497,14 @@ class Demineur():
                 if not(self.mute):
                     playsound("sounds/ta_da.mp3", block = False)
                 print("Partie gagné !")
-                if self.lifeMode != None:
-                    self.lifemode_score += 1
+                if self.marathon != None:
+                    self.marathon_score += 1
                     self.incrementationToutesLes3Victoires +=1
                     if self.incrementationToutesLes3Victoires >= 3:
                         self.incrementationToutesLes3Victoires = 0
-                        self.lifeMode += 1
+                        self.marathon += 1
                         self.lifes.delete(self.lifes_text)
-                        self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.lifeMode))
+                        self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.marathon))
                     if bool(getrandbits(1)):
                         self.NB_LINES += 2
                     else:
@@ -513,13 +519,13 @@ class Demineur():
                         self.nbMines=nbNouvellesMines
                     self.nbMinesTrouver = 0
                     self.actualiserAfficheurMines()
-                    self.lifes_victoires.configure(text="Victoires : " + str(self.lifemode_score))
+                    self.lifes_victoires.configure(text="Victoires : " + str(self.marathon_score))
                     self.resetDemineur()
                 else:
                     self.finPartie()
                     self.oneTime = False
             self.root.after(500, self.actualiserTimer)
-        elif self.lifeMode == None:
+        elif self.marathon == None:
             if self.OLD_SCHOOL:
                 self.mines.affiche(self.nbMines)
             else:
@@ -558,23 +564,23 @@ class Demineur():
         if self.__DEBUG__ :
             print("Cheat ?", self.cheat)
             print("Pseudo:", pseudo)
-            if self.lifeMode == None:
+            if self.marathon == None:
                 print("Score:", self.score)
                 print("Nombre de mines:", self.nbMines)
                 print("Taille grille (X Y):", self.NB_COLS, self.NB_LINES)
             else:
-                print("Victoires:", self.lifemode_score)
+                print("Victoires:", self.marathon_score)
         #ajouter le score à la liste:
         if self.cheat:
-            if self.lifeMode == None:
+            if self.marathon == None:
                 self.scores.write(pseudo + " [cheateur]", self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
             else:
-                self.scores.write(pseudo + " [cheateur]", self.nbMines, lifeMode=self.lifemode_score)
+                self.scores.write(pseudo + " [cheateur]", self.nbMines, marathon=self.marathon_score)
         else:
-            if self.lifeMode == None:
+            if self.marathon == None:
                 self.scores.write(pseudo, self.nbMines, score=self.score, tailleX=self.NB_COLS, tailleY=self.NB_LINES)
             else:
-                self.scores.write(pseudo, self.nbMines, lifeMode=self.lifemode_score)
+                self.scores.write(pseudo, self.nbMines, marathon=self.marathon_score)
         self.labelPseudo.destroy()
         self.entryPseudo.destroy()
         self.buttonPseudo.destroy()

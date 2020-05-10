@@ -3,16 +3,16 @@ class Scores():
         def __init__(self, splitter="__SPLITTER__"):
             fichier = open("scores.stats", "a")
             fichier.close()
-            fichier = open("scores_lifemode.stats", "a")
+            fichier = open("scores_marathon.stats", "a")
             fichier.close()
             self.splitter = splitter
         
-        def write(self, pseudo, nbMines, score=0, tailleX=0, tailleY=0, lifeMode=None):
-            if lifeMode != None:
-                fichier = open("scores_lifemode.stats", "a")
+        def write(self, pseudo, nbMines, score=0, tailleX=0, tailleY=0, marathon=None):
+            if marathon != None:
+                fichier = open("scores_marathon.stats", "a")
                 pseudo = pseudo.replace(self.splitter, "")
                 if(pseudo != ""):
-                    fichier.write(pseudo + "__SPLITTER__" + str(lifeMode) + "\n")
+                    fichier.write(pseudo + "__SPLITTER__" + str(marathon) + "\n")
                     fichier.close()
                     return True
                 fichier.close()
@@ -26,9 +26,9 @@ class Scores():
                 fichier.close()
             return False
 
-        def read(self, lifemode=False):
-            if lifemode:
-                fichier = open("scores_lifemode.stats", "r")
+        def read(self, marathon=False):
+            if marathon:
+                fichier = open("scores_marathon.stats", "r")
                 string = fichier.read()
                 out = []
                 for pseudo_score in string.split('\n'):

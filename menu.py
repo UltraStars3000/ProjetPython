@@ -20,26 +20,22 @@ class Menu():
         self.nom.bind("<Button-1>", self.woaw)
         self.nom.bind("<Button-3>", self.woaw)
         self.principal.bind("<Control-Shift-KeyPress-Y>", self.woaw)
-        self.nouvellePartie = Button(self.principal, text="Nouvelle partie", bd=0, font=("Times New Roman", 20, "bold italic"),
+        Button(self.principal, text="Nouvelle partie", bd=0, font=("Times New Roman", 20, "bold italic"),
                                 bg='lightgray', activebackground='gray',
                                 fg='gray', activeforeground='lightgray',
-                                width=12, command=self.nouvellePartie)
-        self.nouvellePartie.grid(row=1, column=0, pady=5)
-        self.lifeMode = Button(self.principal, text="LifeMode", bd=0, font=("Times New Roman", 20, "bold italic"),
+                                width=12, command=self.nouvellePartie).grid(row=1, column=0, pady=5)
+        Button(self.principal, text="Marathon", bd=0, font=("Times New Roman", 20, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
-                               width=12, command=self.lifeMode)
-        self.lifeMode.grid(row=2, column=0, pady=5)
-        self.scoreboard = Button(self.principal, text="Scoreboard", bd=0, font=("Times New Roman", 20, "bold italic"),
+                               width=12, command=self.marathon).grid(row=2, column=0, pady=5)
+        Button(self.principal, text="Scoreboard", bd=0, font=("Times New Roman", 20, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
-                               width=12, command=self.scoreboard)
-        self.scoreboard.grid(row=3, column=0, pady=5)
-        self.options = Button(self.principal, text="Options", bd=0, font=("Times New Roman", 20, "bold italic"),
+                               width=12, command=self.scoreboard).grid(row=3, column=0, pady=5)
+        Button(self.principal, text="Options", bd=0, font=("Times New Roman", 20, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
-                               width=12, command=self.options)
-        self.options.grid(row=4, column=0, pady=5)
+                               width=12, command=self.options).grid(row=4, column=0, pady=5)
         self.principal.mainloop()
 
     def nouvellePartie(self):
@@ -61,13 +57,13 @@ class Menu():
                     m=False
                 else:
                     m=True
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=None, mute=m, bg=listeVariables[6], fg=listeVariables[7])
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, marathon=None, mute=m, bg=listeVariables[6], fg=listeVariables[7])
             else:
                 Demineur(self.principal, difficulte=4, oldSchool=False)
         else:
             messagebox.showerror(title="Lancement de partie", message="Veuillez fermer les options avant de lancer une partie.")
 
-    def lifeMode(self):
+    def marathon(self):
         print(self.opt.optionsOpen == False)
         if self.opt.optionsOpen == False:
             listeVariables=self.readOptions()
@@ -86,9 +82,9 @@ class Menu():
                     m=False
                 else:
                     m=True
-                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, lifeMode=int(listeVariables[5]), mute=m, bg=listeVariables[6], fg=listeVariables[7])
+                Demineur(self.principal, nombreColonnes=int(listeVariables[2]), nombreLignes=int(listeVariables[3]), forcageNombreMines=None, difficulte=int(listeVariables[4]), oldSchool=old, afficheurOldSchoolVisible=affOld, marathon=int(listeVariables[5]), mute=m, bg=listeVariables[6], fg=listeVariables[7])
             else:
-                Demineur(self.principal, difficulte=4, oldSchool=False, lifeMode=3)
+                Demineur(self.principal, difficulte=4, oldSchool=False, marathon=3)
         else:
             messagebox.showerror(title="Lancement de partie", message="Veuillez fermer les options avant de lancer une partie.")
     
@@ -96,17 +92,18 @@ class Menu():
         self.scores = Scores()
         self.principal.withdraw()
         self.scoreboardWindow=Toplevel(self.principal)
+        self.scoreboardWindow.title("Tableau des scores")
         self.scoreboardWindow.protocol("WM_DELETE_WINDOW", self.onClosingScoreboardWindow)
         self.boutonNormalMode = Button(self.scoreboardWindow, text="Mode normal", bd=0, font=("Times New Roman", 10, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
                                width=10, command=self.refreshListeScoresNormal)
         self.boutonNormalMode.grid(row=0, column=0)
-        self.boutonLifeMode = Button(self.scoreboardWindow, text="Life Mode", bd=0, font=("Times New Roman", 10, "bold italic"),
+        self.boutonMarathon = Button(self.scoreboardWindow, text="Marathon", bd=0, font=("Times New Roman", 10, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
-                               width=10, command=self.refreshListeScoresLifeMode)
-        self.boutonLifeMode.grid(row=1, column=0)
+                               width=10, command=self.refreshListeScoresMarathon)
+        self.boutonMarathon.grid(row=1, column=0)
         self.boutonRetour = Button(self.scoreboardWindow, text="Retour", bd=0, font=("Times New Roman", 10, "bold italic"),
                                bg='lightgray', activebackground='gray',
                                fg='gray', activeforeground='lightgray',
@@ -129,7 +126,7 @@ class Menu():
         self.entete.create_text(175,10,fill="black",font=("Times New Roman", 10, "bold"), text="Score")
         self.entete.create_text(225,10,fill="black",font=("Times New Roman", 10, "bold"), text="Taille")
         self.entete.create_text(300,10,fill="black",font=("Times New Roman", 10, "bold"), text="Nombre de mines")
-        liste = self.scores.read(lifemode=False)
+        liste = self.scores.read(marathon=False)
         print("=========[Scoreboard]=========")
         for score in liste:
             print(score)
@@ -149,14 +146,14 @@ class Menu():
             self.listeScores.create_text(300,10+20*i,fill="black",font=("Times New Roman", 10, "bold"), text=score[3])
             i+=1
 
-    def refreshListeScoresLifeMode(self):
+    def refreshListeScoresMarathon(self):
         self.entete.destroy()
         self.entete = Canvas(self.scoreboardWindow, width=250, height=20)
         self.entete.grid(row=0, column=1)
         self.entete.create_text( 75,10,fill="black",font=("Times New Roman", 10, "bold"), text="Pseudo")
         self.entete.create_text(200,10,fill="black",font=("Times New Roman", 10, "bold"), text="Victoire(s)")
-        liste = self.scores.read(lifemode=True)
-        print("====[Scoreboard  LifeMode]====")
+        liste = self.scores.read(marathon=True)
+        print("====[Scoreboard  Marathon]====")
         for score in liste:
             print(score)
         print("==============================")
