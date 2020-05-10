@@ -81,7 +81,7 @@ class Demineur():
         self.son = PhotoImage(file="gamedata/img/son.gif")
         self.muted = PhotoImage(file="gamedata/img/mute.gif")
         if self.marathon != None:
-            self.coeur = PhotoImage(file="img/coeur.gif")
+            self.coeur = PhotoImage(file="gamedata/img/coeur.gif")
             self.marathon_score = 0
             self.lifes = Canvas(self.root, width=83, height=41, bg="white")
             self.lifes.grid(row=0, column=0)
