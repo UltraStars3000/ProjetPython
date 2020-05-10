@@ -59,6 +59,7 @@ class Demineur():
         self.win = False
         self.perdu=False
         self.oneTime = True
+        self.incrementationToutesLes3Victoires = 0
         self.score_time_max = sys.maxsize * 2 + 1
         self.score_time = 0
         self.root=Toplevel(self.parent)
@@ -142,17 +143,6 @@ class Demineur():
         for i in range(len(self.grille[1])):
             for j in range(len(self.grille[1][i])):
                 self.grille[1][i][j]=G[i][j]
-        print("====================================")
-        print("La prochaine grille:")
-        print(self.grille[1])
-        print("====================================")
-    
-    def estLePremierCoup(self, G):
-        for i in range(len(G)):
-            for j in range(len(G[i])):
-                if not(G[i][j] == 0):
-                    return False
-        return True
 
     def quelBouton(self, event):
         X = (event.x//43)
@@ -167,16 +157,10 @@ class Demineur():
                                      "retour en arrière par tour.\n"+
                                      "Plus ça serait de la triche.")
                 else:
-                    print("====================================")
-                    print("Coup precedent chargé:")
-                    print(self.getCoupPrecedent())
-                    print("====================================")
                     self.setGrille(self.getCoupPrecedent())
                     self.win = False
                     self.perdu = False
                     self.oneTime = True
-                    if self.estLePremierCoup(self.getCoupPrecedent()):
-                        print("premier coup chargé")
                     self.coupPrecedent = []
                     self.refreshScreen()
             else:
@@ -232,19 +216,11 @@ class Demineur():
                 if 2 >= self.grille[1][col][line] >= 0:
                     #Ajout du coup aux coups précédents:
                     self.setCoupPrecedent()
-                print("====================================")
-                print("Coup precedent:")
-                print(self.coupPrecedent)
-                print("====================================")
                 #Rafraichissement de la case choisit:
                 if col<len(self.grille[1]) and line<len(self.grille[1][0]):
                     self.changeCase(col, line)
                 #Rafraichissement du jeu:
                 self.refreshScreen()
-                print("====================================")
-                print("Coup actuel:")
-                print(self.grille[1])
-                print("====================================")
                 #Debug:
                 if self.__DEBUG__ :
                     # on dessine un carré
@@ -269,19 +245,11 @@ class Demineur():
                 if 2 >= self.grille[1][col][line] >= 0:
                     #Ajout du coup aux coups précédents:
                     self.setCoupPrecedent()
-                print("====================================")
-                print("Coup precedent:")
-                print(self.coupPrecedent)
-                print("====================================")
                 #Mecanique grille du jeu:
                 if col<len(self.grille[1]) and line<len(self.grille[1][0]):
                     self.revelerCase(col, line)
                 #Rafraichissement du jeu:
                 self.refreshScreen()
-                print("====================================")
-                print("Coup actuel:")
-                print(self.grille[1])
-                print("====================================")
                 #Debug:
                 if self.__DEBUG__ :
                     # on dessine un carré
@@ -426,10 +394,6 @@ class Demineur():
             for j in range(len(self.grille[1][i])):
                 G.append(self.grille[1][i][j])
             self.coupPrecedent.append(G)
-        print("====================================")
-        print("Coup precedent:")
-        print(self.coupPrecedent)
-        print("====================================")
     
     def getCoupPrecedent(self):
         return self.coupPrecedent
@@ -529,6 +493,12 @@ class Demineur():
                 print("Partie gagné !")
                 if self.lifeMode != None:
                     self.lifemode_score += 1
+                    self.incrementationToutesLes3Victoires +=1
+                    if self.incrementationToutesLes3Victoires >= 3:
+                        self.incrementationToutesLes3Victoires = 0
+                        self.lifeMode += 1
+                        self.lifes.delete(self.lifes_text)
+                        self.lifes_text=self.lifes.create_text(60,23,fill="black", font="Helvetica 20 bold", text=str(self.lifeMode))
                     if bool(getrandbits(1)):
                         self.NB_LINES += 2
                     else:
